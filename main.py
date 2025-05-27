@@ -4,9 +4,23 @@ import threading
 import time
 import keyboard
 import pyautogui
+import platform
 
 class DisplaySwitchApp:
     def __init__(self, root):
+        # find os type: windows 10 or 11?
+        # if windows 10, use /clone and /extend
+        # if windows 11, use 2 and 3
+        # if not windows, raise error
+        if platform.system() != "Windows":
+            raise OSError("Unsupported operating system")
+        if platform.release() == "10":
+            self.original_display = "/extend"
+            self.target_display = "/clone"
+        elif platform.release() == "11":
+            self.original_display = "3"
+            self.target_display = "2"
+
         # create the main window: 240x100
         self.root = root
         self.root.title("RGDC")
