@@ -24,7 +24,7 @@ class DisplaySwitchApp:
         # create the main window: 240x100
         self.root = root
         self.root.title("RGDC")
-        self.root.geometry("240x100+1150+880")
+        self.root.geometry("260x100+1150+880")
         self.root.resizable(False, False)
         # default delay time in minutes
         # find in time.txt
@@ -45,8 +45,6 @@ class DisplaySwitchApp:
         # 3: Extend
         # 4: Second screen only
         self.original_display = "3"
-        self.target_display = "2"
-
 
         # # unused, ignore
         # create a thread for key listener outside of main thread
@@ -69,12 +67,21 @@ class DisplaySwitchApp:
         self.start_btn = tk.Button(root, text="Start", command=self.start_sequence, width=5, height=1, font=("Arial", 14))
         self.start_btn.grid(row=1, column=1, padx=5, pady=5)
 
-        # create two buttons to modulate f1 and f2 keys
-        self.f1_btn = tk.Button(root, text="F1", command=self.press_f1, width=5, height=1, font=("Arial", 14))
-        self.f1_btn.grid(row=0, column=2, padx=5, pady=5)
+        # create a toggle button to alternate between F2 (on) and F1 (off)
+        self.toggle_state = False  # False: off, True: on
 
-        self.f2_btn = tk.Button(root, text="F2", command=self.press_f2, width=5, height=1, font=("Arial", 14))
-        self.f2_btn.grid(row=1, column=2, padx=5, pady=5)
+        def toggle_f2_f1():
+            if not self.toggle_state:
+                self.press_f2()
+                self.toggle_state = True
+                self.toggle_btn.config(bg="#153e75", activebackground="#1d4f91", text="Hx of tooth\nOn")
+            else:
+                self.press_f1()
+                self.toggle_state = False
+                self.toggle_btn.config(bg="#5fa8e6", activebackground="#7fc1f9", text="Hx of tooth\nOff")
+
+        self.toggle_btn = tk.Button(root, text="Hx of tooth\nOff", command=toggle_f2_f1, width=8, height=3, font=("Arial", 14), bg="#5fa8e6", activebackground="#7fc1f9", fg="white")
+        self.toggle_btn.grid(row=0, column=2, rowspan=2, padx=5, pady=5)
 
     def press_f1(self):
         # minimize window, send F1, then restore window
@@ -141,7 +148,7 @@ class DisplaySwitchApp:
         minutes, seconds = divmod(self.delay_minutes * 60, 60)
         self.label.config(text=f"{minutes:02}:{seconds:02}")
         # go back to original display
-        subprocess.run(["DisplaySwitch.exe", self.original_display])
+        subprocess.run(["DisplaySwitch", self.original_display])
         # self.is_running = False
 
     def run_display_switch_sequence(self):
@@ -153,7 +160,7 @@ class DisplaySwitchApp:
         # # minimize the window
         # self.root.iconify()
         # switch to the target display
-        subprocess.run(["DisplaySwitch.exe", self.target_display])
+        subprocess.run(["DisplaySwitch", self.target_display])
         # count down on the tkinter label in seconds
         for i in range(self.delay_minutes * 60, 0, -1):
             # stop the display switch sequence if the stop button is pressed
@@ -169,7 +176,7 @@ class DisplaySwitchApp:
         # reset the label to the initial state
         minutes, seconds = divmod(self.delay_minutes * 60, 60)
         self.label.config(text=f"{minutes:02}:{seconds:02}")
-        subprocess.run(["DisplaySwitch.exe", self.original_display])
+        subprocess.run(["DisplaySwitch", self.original_display])
         self.start_btn.config(text="Start", command=self.start_sequence)
         # enable the increase and decrease buttons
         self.increase_btn.config(state=tk.NORMAL)
