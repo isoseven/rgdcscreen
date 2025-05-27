@@ -32,19 +32,18 @@ class DisplaySwitchApp:
             with open("time.txt", "r") as tm:
                 value = tm.read().strip()
                 if value:
-                    self.delay_minutes = int(value)
+                    self.delay_seconds = int(value)
                 else:
                     raise ValueError
         except FileNotFoundError:
-            self.delay_minutes = 5
+            self.delay_seconds = 30
             with open("time.txt", "w+") as tm:
-                tm.write(str(self.delay_minutes))
+                tm.write(str(self.delay_seconds))
         # desired to/from display:
         # 1: PC screen
         # 2: Duplicate
         # 3: Extend
         # 4: Second screen only
-        self.original_display = "3"
 
         # # unused, ignore
         # create a thread for key listener outside of main thread
@@ -57,7 +56,7 @@ class DisplaySwitchApp:
         self.increase_btn.grid(row=0, column=0, padx=5, pady=5)
 
         # create a label to display the delay time
-        minutes, seconds = divmod(self.delay_minutes * 60, 60)
+        minutes, seconds = divmod(self.delay_seconds, 60)
         self.label = tk.Label(root, text=f"{minutes:02}:{seconds:02}", font=("Arial", 14))
         self.label.grid(row=0, column=1, padx=5, pady=5)
 
@@ -115,13 +114,13 @@ class DisplaySwitchApp:
     
     # disable the increase and decrease buttons
     def increase_time(self):
-        self.delay_minutes += 1
+        self.delay_seconds += 15
         self.update_label()
 
     # decrease the delay time by 1 minute
     def decrease_time(self):
-        if self.delay_minutes > 1:
-            self.delay_minutes -= 1
+        if self.delay_seconds > 15:
+            self.delay_seconds -= 15
         self.update_label()
 
     # update the label with the current delay time
@@ -129,8 +128,8 @@ class DisplaySwitchApp:
         # M:SS format
         # write the delay time to time.txt
         with open("time.txt", "w+") as tm:
-            tm.write(str(self.delay_minutes))
-        minutes, seconds = divmod(self.delay_minutes * 60, 60)
+            tm.write(str(self.delay_seconds))
+        minutes, seconds = divmod(self.delay_seconds, 60)
         self.label.config(text=f"{minutes:02}:{seconds:02}")
 
     # start the display switch sequence
@@ -145,7 +144,7 @@ class DisplaySwitchApp:
         self.increase_btn.config(state=tk.NORMAL)
         self.decrease_btn.config(state=tk.NORMAL)
         # reset the label to the initial state
-        minutes, seconds = divmod(self.delay_minutes * 60, 60)
+        minutes, seconds = divmod(self.delay_seconds, 60)
         self.label.config(text=f"{minutes:02}:{seconds:02}")
         # go back to original display
         subprocess.run(["DisplaySwitch", self.original_display])
@@ -162,7 +161,7 @@ class DisplaySwitchApp:
         # switch to the target display
         subprocess.run(["DisplaySwitch", self.target_display])
         # count down on the tkinter label in seconds
-        for i in range(self.delay_minutes * 60, 0, -1):
+        for i in range(self.delay_seconds, 0, -1):
             # stop the display switch sequence if the stop button is pressed
             if not self.start_btn['text'] == "Stop":
                 break
@@ -174,7 +173,7 @@ class DisplaySwitchApp:
             self.root.update_idletasks()
         # switch to the next display
         # reset the label to the initial state
-        minutes, seconds = divmod(self.delay_minutes * 60, 60)
+        minutes, seconds = divmod(self.delay_seconds, 60)
         self.label.config(text=f"{minutes:02}:{seconds:02}")
         subprocess.run(["DisplaySwitch", self.original_display])
         self.start_btn.config(text="Start", command=self.start_sequence)
